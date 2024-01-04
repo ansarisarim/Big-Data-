@@ -1,0 +1,203 @@
+# CDP-script-
+Lms script for CDP
+
+=================TAKE UBUNTU MACHINE FOR HOSTING==============================================
+sudo apt update
+
+UPLOAD REPO ON UBUNTU MACHINE BY CMD PROMPT
+OR
+DOWNLOAD REPO ON UBUNTU MACHINE
+
+wget https://archive.cloudera.com/cm7/7.4.4/repo-as-tarball/cm7.4.4-redhat7.tar.gz
+
+tar -zxvf cm7.4.4-redhat7.tar.gz
+
+sudo mv cm7.4.4/ cloudera
+
+sudo apt install apache2 -y
+
+sudo mv cloudera /var/www/html/
+
+
+TAKE THE IP OF WS(UBUNTU) & GO TO BROWSER TYPE WS_IP/cloudera
+
+
+==============================================================================================
+######LAUNCH A CENTOS 7 MACHINE TAKING c3 or m4  ONLY FOR MAKING THE IMAGE WITH CONNECTOR
+WITH STORAGE 60
+===========================NECESSARY PACKAGES==================================================
+
+sudo yum update -y
+
+===============================INSTALLING JAVA AND JDK============================================
+   
+sudo yum install java-1.8.0-openjdk-devel -y
+
+sudo yum install wget -y
+
+wget https://s3.amazonaws.com/cloud-age/jdk-8u162-linux-x64.rpm
+
+sudo rpm -Uv jdk-8u162-linux-x64.rpm
+
+wget https://downloads.mysql.com/archives/get/p/3/file/mysql-connector-java-8.0.26-1.el7.noarch.rpm
+
+sudo yum install java-1.8.0-openjdk-devel -y
+
+md5sum mysql-connector-java-8.0.26-1.el7.noarch.rpm 
+
+sudo rpm -ivh  mysql-connector-java-8.0.26-1.el7.noarch.rpm
+
+
+============================DOWNLOADING REQUIRED SCRIPTS FOR PRE REQUISITE========================
+
+python kernel-tuning.py
+
+===================================INSTALLING JDBC CONNECTORS ======================================
+
+
+wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.46.tar.gz
+
+tar zxvf mysql-connector-java-5.1.46.tar.gz
+
+sudo mkdir -p /usr/share/java/
+
+cd mysql-connector-java-5.1.46
+
+sudo cp /home/centos/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
+
+cd
+
+========================================MAKE IMAGE ==================================================
+
+Make image of Cloudagera Manager AND Launch 6 Instances
+
+CM
+DB
+GATEWAY
+MASTER MACHINE
+1DN
+2DN
+3DN
+
+=====================================INSTALLING MYSQL SERVER AND DAEMONS==================================
+
+wget https://dev.mysql.com/get/mysql57-community-release-el7-9.noarch.rpm 
+
+md5sum mysql57-community-release-el7-9.noarch.rpm
+
+sudo rpm -ivh mysql57-community-release-el7-9.noarch.rpm
+
+sudo yum install --nogpgcheck mysql-server -y
+
+sudo yum install mysql-server
+
+sudo systemctl start mysqld
+
+sudo systemctl status mysqld
+
+sudo grep 'temporary password' /var/log/mysqld.log   
+
+sudo mysql_secure_installation
+
+Enter password for user root: :paste the temporary password which you get in above command
+New password: P@ssw0rd
+Re-enter new Password: P@ssw0rd
+Change the root password? [Y/n] n
+Remove anonymous users? [Y/n] y
+Disallow root login remotely? [Y/n] y
+Remove test database and access it? [Y/n] n
+Reload privilege tables now? [Y/n] y
+
+============================================CREATING DATABASES ==================================
+mysql -u root -p
+
+show databases;
+
+CREATE DATABASE scm DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+GRANT ALL ON scm.* TO 'scm'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+
+create database hive DEFAULT CHARACTER SET utf8;
+grant all on hive.* TO 'hive'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+create database hue DEFAULT CHARACTER SET utf8;
+grant all on hue.* TO 'hue'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+create database rman DEFAULT CHARACTER SET utf8;
+grant all on rman.* TO 'rman'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+create database navs DEFAULT CHARACTER SET utf8;
+grant all on navs.* TO 'navs'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+create database navms DEFAULT CHARACTER SET utf8;
+grant all on navms.* TO 'navms'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+create database oozie DEFAULT CHARACTER SET utf8;
+grant all on oozie.* TO 'oozie'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+create database actmo DEFAULT CHARACTER SET utf8;
+grant all on actmo.* TO 'actmo'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+create database sentry DEFAULT CHARACTER SET utf8;
+grant all on sentry.* TO 'sentry'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+create database ranger DEFAULT CHARACTER SET utf8;
+grant all on ranger.* TO 'ranger'@'%' IDENTIFIED BY 'P@ssw0rd';
+
+CREATE USER 'temp'@'%' IDENTIFIED BY 'P@ssw0rd';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, RELOAD, PROCESS, REFERENCES, INDEX, ALTER, SHOW DATABASES, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, REPLICATION SLAVE, REPLICATION CLIENT, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER ON *.* TO 'temp'@'%' WITH GRANT OPTION;
+
+show databases;
+exit;
+
+=====================================CONFIGURATION OF CM=========================================================
+
+sudo nano /etc/yum.repos.d/cloudera-manager.repo
+
+
+
+*Repo CDP*
+
+[cloudera-manager]
+# Packages for Cloudera Manager, Version 5, on RedHat or CentOS 7 x86_64
+name=Cloudera Manager
+baseurl=http://172.31.36.163/cloudera/
+gpgkey =http://172.31.36.163/cloudera/RPM-GPG-KEY-cloudera
+gpgcheck = 0
+ 
+
+
+
+sudo yum clean all
+
+sudo yum makecache
+
+sudo yum install cloudera-manager-server cloudera-manager-daemons -y
+
+
+{USE HERE DB PRIVATE IP}
+
+sudo /opt/cloudera/cm/schema/scm_prepare_database.sh mysql -h ip-172-31-8-245.ap-south-1.compute.internal scm scm P@ssw0rd    
+
+(IF THERE IS CONNECTOR ERROE USE --force)
+
+
+sudo service cloudera-scm-server start
+
+sudo service cloudera-scm-server status
+
+==========================================TO CHECK STATUS OF CDM =========================================================
+
+sudo netstat -tulnp
+
+sudo netstat -tulnp | grep 7180
+
+  priv IP
+172.31.8.245 
+172.31.8.29 
+172.31.13.124 
+172.31.12.126 
+172.31.11.133 
+172.31.4.102 
+
+
