@@ -1,0 +1,76 @@
+**** S3 ****
+
+Open IAM (identity and access management)
+
+go to the roles 
+create role
+select ec2
+search for s3fullacess 
+select  AmazonS3FullAccess
+then assign a role name and continue 
+done 
+
+**** open instance you wanna connect to S3
+select the instance and go to instance setting 
+then attach IAM Role 
+select your assigned role and continue  
+
+**** open the launched instance 
+
+sudo apt update -y
+sudo apt install awscli -y
+
+
+**** S3 COMMANDS ****
+
+**** make bucket command ****
+
+aws s3 mb s3://gaana.com                         (Creating bucket globally)
+
+aws s3 mb s3://netflix.co --region us-west-2     ( creating bucket in specific region)
+
+
+**** list command (from instance to S3)****
+
+aws s3 ls                                           (view s3 buckets)
+
+aws s3 ls s3://gaana.com                            (view specific s3 bucket)
+
+aws s3 ls s3://gaana.com --recursive                (view files in directories)
+ 
+aws s3 ls s3://gaana.com --recursive --summarize    (view recursively files in directories)
+
+
+**** copying file command (instance to S3)****
+
+aws s3 cp file_name s3://gaana.com                      (copy files to S3)
+
+aws s3 sync ./dir_name/ s3://gaana.com                  (copy directory to S3)
+
+aws s3 cp s3://gaana.com/file_name ./                   (copying file from s3 to home) (you can add specific directory after "./" )
+ 
+aws s3 cp s3://gaana.com/dashboard s3://netflix.co      (copying files from one s3 bucket to another s3 bucket) 
+
+
+**** move command (instance to S3) ****
+
+aws s3 mv file_name s3://gaana.com                      (moving file to S3)
+
+aws s3 sync ./dir_name/ s3://gaana.com                  (moving directory to s3) 
+
+aws s3 mv s3://gaana.com/file_name ./                   (moving file from s3 to home) (you can add specific directory after "./" )
+
+aws s3 mv s3://gaana.com/file_name s3://netflix.co      (moving files from one s3 bucket to another s3 bucket)
+
+
+**** remove command ****
+
+aws s3 rm s3://gaana.com/file_name                      (removing file from S3)
+
+
+**** remove bucket ****
+
+aws s3 rb s3://gaana.com                                (remove bucket)
+
+
+
